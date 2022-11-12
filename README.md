@@ -283,34 +283,130 @@ textEdit.resize(300,350) 就决定了文本框的 宽度为300像素，高度为
 
 这样代码的可读性是不是好多了？
 
+### **Qt Designer 简介**
 
+QT程序界面的 一个个窗口、控件，就是像上面那样用相应的代码创建出来的。
 
+但是，把你的脑海里的界面，用代码直接写出来，是有些困难的。
 
+很多时候，运行时呈现的样子，不是我们要的。我们经常还要修改代码调整界面上控件的位置，再运行预览。反复多次这样操作。
 
+可是这样，真的…太麻烦了。
 
+其实，我们可以用QT界面生成器 Qt Designer ，拖拖拽拽就可以直观的创建出程序大体的界面。
 
+怎么运行这个工具呢？
 
+Windows下，运行 Python安装目录下 Scripts\pyside2-designer.exe 这个可执行文件
 
+如果你安装的是pyqt5， 运行 Python安装目录下 Scripts\pyqt5designer.exe 这个可执行文件
 
+根据上面链接的视频讲解，大家初步了解一下 Qt Designer 的使用方法。
 
+通过 Qt Designer 设计的界面，最终是保存在一个ui文件中的。
 
+大家可以打开这个ui文件看看，就是一个XML格式的界面定义。
 
+### **动态加载UI文件**
 
+有了界面定义文件，我们的Python程序就可以从文件中加载UI定义，并且动态 创建一个相应的窗口对象。
 
+如下：
 
+    from PySide2.QtWidgets import QApplication, QMessageBox
+    from PySide2.QtUiTools import QUiLoader
+    
+    class Stats:
+    
+        def __init__(self):
+            # 从文件中加载UI定义
+    
+            # 从 UI 定义中动态 创建一个相应的窗口对象
+            # 注意：里面的控件对象也成为窗口对象的属性了
+            # 比如 self.ui.button , self.ui.textEdit
+            self.ui = QUiLoader().load('main.ui')
+    
+            self.ui.button.clicked.connect(self.handleCalc)
+    
+        def handleCalc(self):
+            info = self.ui.textEdit.toPlainText()
+    
+            salary_above_20k = ''
+            salary_below_20k = ''
+            for line in info.splitlines():
+                if not line.strip():
+                    continue
+                parts = line.split(' ')
+    
+                parts = [p for p in parts if p]
+                name,salary,age = parts
+                if int(salary) >= 20000:
+                    salary_above_20k += name + '\n'
+                else:
+                    salary_below_20k += name + '\n'
+    
+            QMessageBox.about(self.ui,
+                        '统计结果',
+                        f'''薪资20000 以上的有：\n{salary_above_20k}
+                        \n薪资20000 以下的有：\n{salary_below_20k}'''
+                        )
+    
+    app = QApplication([])
+    stats = Stats()
+    stats.ui.show()
+    app.exec_()
 
+如果你使用的是PyQt5 而不是 PySide2，加载UI文件的代码如下
 
+    from PyQt5 import uic
+    
+    class Stats:
+    
+        def __init__(self):
+            # 从文件中加载UI定义
+            self.ui = uic.loadUi("main.ui")
 
+### **转化UI文件为Python代码**
 
+还有一种使用UI文件的方式：先把UI文件直接转化为包含界面定义的Python代码文件，然后在你的程序中使用定义界面的类
 
+1. 执行如下的命令 把UI文件直接转化为包含界面定义的Python代码文件
 
+    pyside2-uic main.ui > ui_main.py
 
+如果你安装的是PyQt5，执行如下格式的命令转化
 
+    pyuic5 main.ui > ui_main.py
 
+然后在你的代码文件中这样使用定义界面的类
 
+    from PySide2.QtWidgets import QApplication,QMainWindow
+    from ui_main import Ui_MainWindow
+    
+    # 注意 这里选择的父类 要和你UI文件窗体一样的类型
+    # 主窗口是 QMainWindow， 表单是 QWidget， 对话框是 QDialog
+    class MainWindow(QMainWindow):
+    
+        def __init__(self):
+            super().__init__()
+            # 使用ui文件导入定义界面类
+            self.ui = Ui_MainWindow()
+            # 初始化界面
+            self.ui.setupUi(self)
+    
+            # 使用界面定义的控件，也是从ui里面访问
+            self.ui.webview.load('http://www.baidu.com')
+    
+    app = QApplication([])
+    mainw = MainWindow()
+    mainw.show()
+    app.exec_()
 
+那么我们该使用哪种方式比较好呢？动态加载还是转化为Python代码？
 
+白月黑羽建议：通常采用动态加载比较方便，因为改动界面后，不需要转化，直接运行，特别方便。
 
+但是，如果 你的程序里面有非qt designer提供的控件， 这时候，需要在代码里面加上一些额外的声明，而且 可能还会有奇怪的问题。往往就 要采用 转化Python代码的方法。
 
 
 

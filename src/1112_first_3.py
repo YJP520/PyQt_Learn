@@ -9,22 +9,29 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QPushButton, QPlainText
 
 class Starts:
     def __init__(self):
+        # 创建窗口
         self.window = QMainWindow()
         self.window.resize(500, 400)
         self.window.move(300, 300)
         self.window.setWindowTitle('薪资统计')
 
+        # 创建文本框
         self.textEdit = QPlainTextEdit(self.window)
         self.textEdit.setPlaceholderText("请输入薪资表")
         self.textEdit.move(10, 25)
         self.textEdit.resize(300, 350)
 
+        # 创建按钮
         self.button = QPushButton('统计', self.window)
         self.button.move(380, 80)
 
+        # 创建按钮事件
         self.button.clicked.connect(self.handleCalc)
 
     def handleCalc(self):
+        """
+        按钮事件
+        """
         info = self.textEdit.toPlainText()
 
         # 薪资20000 以上 和 以下 的人员名单
@@ -42,6 +49,7 @@ class Starts:
             else:
                 salary_below_20k += name + '\n'
 
+        # 对话窗口
         QMessageBox.about(self.window,
                     '统计结果',
                     f'''薪资20000 以上的有：\n{salary_above_20k}
