@@ -13,7 +13,7 @@ class Stats:
 
     def __init__(self):
         # 从文件中加载UI定义
-        qfile_stats = QFile('ui/stats.ui')
+        qfile_stats = QFile('../ui/stats.ui')
         qfile_stats.open(QFile.ReadOnly)
         qfile_stats.close()
 
@@ -25,7 +25,7 @@ class Stats:
         self.ui.pushButton.clicked.connect(self.handleCalc)
 
     def handleCalc(self):
-        info = self.ui.plaintextEdit.toPlainText()
+        info = self.ui.plainTextEdit.toPlainText()
 
         salary_above_20k = ''
         salary_below_20k = ''
